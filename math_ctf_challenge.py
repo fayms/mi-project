@@ -1,165 +1,178 @@
 #!/usr/bin/env python3
 """
-Reverse Engineering CTF Challenge - Math Puzzle
-Students must solve progressively harder math problems to get the flag.
-Difficulty increases in polynomial time (O(n^2)).
+RE CTF Challenge: Polynomial Math Gauntlet
+Students must solve 10 math problems of increasing polynomial complexity.
+The flag is obfuscated and only revealed after answering all 10 questions correctly.
 """
 
-import hashlib
 import time
-from typing import Tuple
+import sys
+import random
 
-# Hidden flag (students need to reverse engineer or complete the challenge)
-FLAG = "CTF{r3v3rs3_3ng1n33r1ng_m4th_m4st3r_2024}"
+# Obfuscated flag (XOR encoded with key 0x5A)
+FLAG_ENCODED = [25, 14, 28, 33, 40, 105, 44, 105, 40, 41, 105, 5, 105, 52, 61, 107, 52, 105, 105, 40, 107, 52, 61, 5, 55, 110, 46, 50, 5, 55, 110, 41, 46, 105, 40, 5, 104, 106, 104, 110, 39]
 
-def verify_answer(problem_type: str, expected: int, user_answer: int) -> bool:
-    """Verify if the user's answer is correct."""
-    return expected == user_answer
+def decode_flag():
+    """Decode the obfuscated flag"""
+    key = 0x5A
+    return "".join(chr(byte ^ key) for byte in FLAG_ENCODED)
 
-def generate_problem(level: int) -> Tuple[str, int, str]:
-    """
-    Generate math problems with increasing difficulty.
-    Difficulty grows in polynomial time O(n^2).
-    """
+def generate_problem(level):
+    """Generate math problems with polynomial time complexity growth"""
     if level == 1:
-        # Level 1: Simple addition
-        problem = "What is 5 + 7?"
-        answer = 12
-        hint = "Basic arithmetic"
-    elif level == 2:
-        # Level 2: Multiplication
-        problem = "What is 13 * 4?"
-        answer = 52
-        hint = "Multiplication table"
-    elif level == 3:
-        # Level 3: Square root
-        problem = "What is the square root of 144?"
-        answer = 12
-        hint = "Perfect square"
-    elif level == 4:
-        # Level 4: Quadratic expression
-        problem = "If x = 5, what is x^2 + 3x - 10?"
-        answer = 30  # 25 + 15 - 10
-        hint = "Substitute and calculate"
-    elif level == 5:
-        # Level 5: Sum of series
-        problem = "What is the sum of first 20 natural numbers? (1+2+3+...+20)"
-        answer = 210  # n*(n+1)/2 = 20*21/2
-        hint = "Formula: n*(n+1)/2"
-    elif level == 6:
-        # Level 6: Prime factorization
-        problem = "What is the largest prime factor of 13195?"
-        answer = 29  # 13195 = 5 * 7 * 13 * 29
-        hint = "Factorize completely"
-    elif level == 7:
-        # Level 7: Fibonacci sequence
-        problem = "What is the 15th Fibonacci number? (F(1)=1, F(2)=1)"
-        answer = 610
-        hint = "Each number is sum of previous two"
-    elif level == 8:
-        # Level 8: Modular arithmetic
-        problem = "What is (7^25) mod 11?"
-        answer = 10  # Using Fermat's little theorem
-        hint = "Use modular exponentiation"
-    elif level == 9:
-        # Level 9: Combinatorics
-        problem = "How many ways to choose 3 items from 10? (C(10,3))"
-        answer = 120  # 10!/(3!*7!) = 120
-        hint = "Combination formula"
-    elif level == 10:
-        # Level 10: Complex polynomial
-        problem = "Evaluate: 2^10 + 3^6 - 5^4"
-        answer = 4096 + 729 - 625  # = 4200
-        answer = 4200
-        hint = "Calculate each term separately"
-    else:
-        # Final level: Hash verification
-        problem = f"What is the SHA256 hash of '{FLAG}'? (First 8 hex chars)"
-        hash_value = hashlib.sha256(FLAG.encode()).hexdigest()[:8]
-        answer = hash_value
-        hint = "You should know the flag by now!"
+        a = random.randint(10, 50)
+        b = random.randint(10, 50)
+        return f"What is {a} + {b}?", a + b
     
-    return problem, answer, hint
-
-def calculate_fibonacci(n: int) -> int:
-    """Helper function for Fibonacci calculation."""
-    if n <= 2:
-        return 1
-    a, b = 1, 1
-    for _ in range(3, n + 1):
-        a, b = b, a + b
-    return b
+    elif level == 2:
+        a = random.randint(5, 20)
+        b = random.randint(5, 20)
+        return f"What is {a} × {b}?", a * b
+    
+    elif level == 3:
+        n = random.randint(5, 15)
+        return f"What is the sum of squares from 1 to {n}?", sum(i*i for i in range(1, n+1))
+    
+    elif level == 4:
+        n = random.randint(10, 20)
+        a, b = 0, 1
+        for _ in range(n):
+            a, b = b, a + b
+        return f"What is the {n}th Fibonacci number?", a
+    
+    elif level == 5:
+        n = random.randint(3, 10)
+        return f"What is the sum of cubes from 1 to {n}?", sum(i**3 for i in range(1, n+1))
+    
+    elif level == 6:
+        n = random.randint(100, 500)
+        def count_prime_factors(num):
+            count = 0
+            d = 2
+            while d * d <= num:
+                while num % d == 0:
+                    count += 1
+                    num //= d
+                d += 1
+            if num > 1:
+                count += 1
+            return count
+        return f"How many prime factors does {n} have (with multiplicity)?", count_prime_factors(n)
+    
+    elif level == 7:
+        base = random.randint(2, 10)
+        exp = random.randint(5, 15)
+        mod = random.randint(50, 200)
+        return f"What is {base}^{exp} mod {mod}?", pow(base, exp, mod)
+    
+    elif level == 8:
+        a = random.randint(100, 500)
+        b = random.randint(100, 500)
+        def gcd(x, y):
+            while y:
+                x, y = y, x % y
+            return x
+        return f"What is GCD({a}, {b})?", gcd(a, b)
+    
+    elif level == 9:
+        a = random.randint(1, 5)
+        r = random.randint(2, 4)
+        n = random.randint(5, 10)
+        total = a * (r**n - 1) // (r - 1)
+        return f"What is the sum of geometric series: {a} + {a*r} + ... ({n} terms, ratio {r})?", total
+    
+    elif level == 10:
+        n = random.randint(10, 20)
+        k = random.randint(3, min(7, n-3))
+        def comb(n, k):
+            if k > n or k < 0:
+                return 0
+            result = 1
+            for i in range(k):
+                result = result * (n - i) // (i + 1)
+            return result
+        return f"What is C({n},{k}) (combinations)?", comb(n, k)
+    
+    return "Invalid level", 0
 
 def main():
     print("=" * 60)
     print("REVERSE ENGINEERING CTF CHALLENGE")
+    print("Polynomial Math Gauntlet - 10 Levels")
     print("=" * 60)
-    print("\nWelcome, hacker!")
-    print("Solve all math problems to reveal the flag.")
-    print("Difficulty increases with each level.\n")
-    print("Type 'hint' for a hint, 'quit' to give up.\n")
+    print("\nRules:")
+    print("- Solve 10 math problems of increasing difficulty")
+    print("- Complexity grows polynomially with each level")
+    print("- You have 3 attempts per level")
+    print("- Type 'hint' for a hint (costs 1 attempt)")
+    print("- Type 'quit' to exit")
+    print("- Answer ALL 10 questions correctly to receive the flag\n")
     
-    total_levels = 10
-    current_level = 1
-    
+    input("Press Enter to start...")
     start_time = time.time()
     
-    while current_level <= total_levels:
-        print(f"\n{'='*60}")
-        print(f"LEVEL {current_level}/{total_levels}")
-        print(f"{'='*60}")
+    level = 1
+    
+    while level <= 10:
+        print(f"\n{'='*40}")
+        print(f"LEVEL {level}/10")
+        print(f"{'='*40}")
         
-        problem, answer, hint = generate_problem(current_level)
-        print(f"\nProblem: {problem}")
+        question, correct_answer = generate_problem(level)
+        attempts = 3
         
-        attempts = 0
-        max_attempts = 3
-        
-        while attempts < max_attempts:
-            user_input = input(f"\nYour answer (attempt {attempts + 1}/{max_attempts}): ").strip()
+        while attempts > 0:
+            print(f"\nQuestion: {question}")
+            print(f"Attempts remaining: {attempts}")
+            
+            user_input = input("Your answer: ").strip()
             
             if user_input.lower() == 'quit':
-                print("\nGiving up so soon? The flag remains hidden...")
-                print(f"You reached level {current_level}")
-                return
+                print("\nChallenge aborted. Flag locked forever.")
+                sys.exit(0)
             
             if user_input.lower() == 'hint':
-                print(f"Hint: {hint}")
+                attempts -= 1
+                if level <= 3:
+                    print(f"Hint: Basic arithmetic (complexity ~O(n^{level}))")
+                elif level <= 6:
+                    print(f"Hint: Iterative approach (complexity ~O(n^{level}))")
+                else:
+                    print(f"Hint: Advanced algorithm (complexity ~O(n^{level}))")
                 continue
             
             try:
-                # Try to parse as integer first
                 user_answer = int(user_input)
+                
+                if user_answer == correct_answer:
+                    print("✓ Correct!")
+                    level += 1
+                    break
+                else:
+                    print("✗ Wrong answer!")
+                    attempts -= 1
+                    
+                    if attempts == 0:
+                        print("\nGame Over! You failed this level.")
+                        print("Flag remains locked. Try again from the start.")
+                        sys.exit(0)
+                        
             except ValueError:
-                # For level 10, accept string answer (hash)
-                user_answer = user_input
-            
-            if verify_answer(problem, answer, user_answer):
-                print("\n✓ Correct! Well done!")
-                break
-            else:
-                print("✗ Incorrect. Try again!")
-                attempts += 1
-        
-        if attempts >= max_attempts:
-            print(f"\nToo many failed attempts! The correct answer was: {answer}")
-            print("Game Over!")
-            return
-        
-        current_level += 1
+                print("Please enter a valid number, 'hint', or 'quit'")
     
     end_time = time.time()
-    elapsed_time = end_time - start_time
+    total_time = end_time - start_time
     
     print("\n" + "=" * 60)
-    print("CONGRATULATIONS!")
+    print("CONGRATULATIONS! ALL 10 LEVELS COMPLETED!")
+    print(f"Total time: {total_time:.2f} seconds")
     print("=" * 60)
-    print("\nYou've solved all the problems!")
-    print(f"Time taken: {elapsed_time:.2f} seconds")
-    print("\n" + "*"*60)
-    print(f"HERE IS YOUR FLAG: {FLAG}")
-    print("*"*60)
-    print("\nWell done, reverse engineering master!")
+    
+    # Only reveal flag after all 10 questions answered correctly
+    flag = decode_flag()
+    print(f"\n🏁 FLAG: {flag}")
+    print("\nWell done, Reverse Engineer!")
+    print("You've conquered the Polynomial Math Gauntlet!")
 
 if __name__ == "__main__":
     main()
